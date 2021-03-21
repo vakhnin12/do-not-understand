@@ -65,23 +65,30 @@ function renderListOfNames(array, parentElement) {
         li.appendChild(buttonsContainer);
         ul.appendChild(li);
 
-        addButtonDel.addEventListener("click", function (event, array) {
-            const deleteName = confirm("delete name?");
-            if (deleteName === true) {
-                ul.removeChild(li);
-                array.splice(element)
-                console.log(element)
-            }
-        })
+        addButtonDel.addEventListener("click", function (event) {
+                const deleteName = confirm("delete name?");
+                if (deleteName === true) {
+                    ul.removeChild(li);
+                    const indexElement = array.indexOf(element);
+                    console.log(array.indexOf(element));
+                    // array.splice(indexElement)
+                    delete array[indexElement]
+                    // console.log(array);
 
-        addButtonEdit.addEventListener("click", function (event, text) {
-            const editName = prompt("Enter new name");
-            if (editName === null) {
-                return
-            }
-            console.log(li.text)
-            span.innerText = editName;
-        })
+                }
+            })
+
+        addButtonEdit.addEventListener("click", (event) => {
+                const editName = prompt("Enter new name");
+                if (editName === null) {
+                    return;
+                }
+                span.innerText = editName;
+                const indexElement = array.indexOf(element);
+                console.log(array.indexOf(element))
+                indexElement.element = indexElement.editName;
+                console.log(array)
+            })
 
     });
 
