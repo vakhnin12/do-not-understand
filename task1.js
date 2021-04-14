@@ -1,181 +1,79 @@
-const namesLocal = [
-    "Umberto",
-    "Rodrigo"
-];
-
-// localStorage.setItem(`namesLocal${index}`, JSON.stringify(namesLocal));
-
-// const names = JSON.parse(localStorage.getItem(namesLocal))
-
-namesLocal.forEach(element => {
-    const indexElement = `name - ${namesLocal.indexOf(element)}`
-    const valueOfElement = element
-
-    localStorage.setItem(indexElement, valueOfElement)
-})
-
-const names = [];
-
-function getNames() {
-    for (i = 0; i < localStorage.length; i++) {
-        let key = localStorage.key(i);
-        let value = localStorage.getItem(key)
-        names.push(value)
-    }
-}
-getNames();
-
-function saveData(index, value) {
-    localStorage.setItem(index, value);
-};
-
-function deleteData(index) {
-    localStorage.removeItem(index);
-}
-
-// const names = JSON.parse(localStorage.getItem("namesLocal"))
-
-
 function createButton(text, classes) {
     const button = document.createElement("button");
 
     button.type = "button";
     button.className = classes;
     button.innerText = text;
-    button.style = "width: 20%"
 
     return button;
 };
 
-function createInputField(title, type) {
-    const container = document.createElement("div");
-    container.className = "input-field";
-    container.style = "width: 70%"
-    const span = document.createElement("span");
-    span.innerText = title;
+function loadData(url, onLoad, onError) {
+    const xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open("GET", url);
 
-    const inputElement = document.createElement("input");
-    inputElement.type = type;
-    inputElement.className = "validate";
-    inputElement.value = "";
-
-    container.appendChild(span);
-    container.appendChild(inputElement);
-
-    return { container, inputElement };
-};
-
-
-function renderListOfNames(array, parentElement) {
-    parentElement.innerHTML = "";
-
-    const ul = document.createElement("ul");
-    ul.className = "names"
-
-    array.forEach(element => {
-        // const indexd = array.indexOf(element)
-
-        // localStorage.setItem(indexd, element);
-        const addButtonDel = createButton("Delete", "delete");
-        const addButtonEdit = createButton("Edit", "edit");
-        const buttonsContainer = document.createElement("div");
-        buttonsContainer.appendChild(addButtonDel);
-        buttonsContainer.appendChild(addButtonEdit);
-
-        let li = document.createElement("li");
-        li.className = "name"
-        let span = document.createElement("span")
-        let text = document.createTextNode(element);
-        span.append(text);
-
-        li.append(span);
-        li.appendChild(buttonsContainer);
-        ul.appendChild(li);
-
-        addButtonDel.addEventListener("click", function (event,) {
-            const deleteName = confirm("delete name?");
-            if (deleteName === true) {
-                ul.removeChild(li);
-                const indexElement = array.indexOf(element);
-                array.splice(indexElement, 1);
-
-                deleteData(`name - ${indexElement}`)
-
-                // localStorage.removeItem("namesLocal");
-                // localStorage.setItem("namesLocal", JSON.stringify(array));
-                //     localStorage.clear();
-                //    localStorage.setItem(array, JSON.stringify(array))
-                // localStorage.removeItem(indexElement);
+    xhr.onload = function () {
+        if (xhr.status !== 200) {
+            if (typeof onError === "function") {
+                onError(new Error(`Something went wrong! Status: ${xhr.status}`));
             }
-        })
 
-        addButtonEdit.addEventListener("click", (event) => {
-            const editName = prompt("Enter new name");
-            if (editName === null) {
-                return;
-            }
-            span.innerText = editName;
-            const indexElement = array.indexOf(element);
-            // console.log(array.indexOf(element))
-            array[indexElement] = editName;
-            console.log(indexElement);
-            deleteData(`name - ${indexElement}`)
+            return;
+        }
 
-            saveData(`name - ${indexElement}`, editName)
-            getNames()
+        onLoad(xhr.response);
+        // console.log(onLoad(xhr.response))
+    }
 
-            // localStorage.removeItem("namesLocal");
-            // localStorage.setItem("namesLocal", JSON.stringify(array));
-            // localStorage[indexElement] = editName
-            // localStorage.removeItem(indexElement);
-            // localStorage.setItem(indexElement, editName);
-        })
-
-    });
-
-    parentElement.appendChild(ul);
+    xhr.onerror = function () {
+        if (typeof onError === "function") {
+            onError(new Error("Something went wrong..."));
+        }
+    }
+    xhr.send();
 }
 
-function createFormV2(array, parentElement) {
-    const form = document.createElement("div");
-    form.className = "name-form";
+function renderPosts(data) {
+    
+    const container = document.createElement("div")
+    const list = document.createElement("ul");
 
-    const nameField = createInputField("Name", "text");
-    const addButton = createButton("Add", "add");
-    const list = document.createElement("div");
+    console.log(data)
 
-    form.appendChild(nameField.container);
-    form.appendChild(addButton);
 
-    parentElement.appendChild(form);
-    parentElement.appendChild(list);
-    renderListOfNames(array, list);
+    for (const index in data.results) {
+        const li = document.createElement("li");
+        li.innerText = data.results[index].name;
+        list.appendChild(li)
+    }
+    console.log("PostsLoader.onLoad", data.results[0].name);
 
-    addButton.addEventListener("click", function () {
-        const name = nameField.inputElement.value;
-        array.push(name)
-        const index = array.indexOf(name)
-        renderListOfNames(array, list);
+    container.appendChild(list);
+    const addButtonNext = createButton("Next Page", "next");
+    const addButtonPrev = createButton("Prev Page", "prev");
+    const buttonsContainer = document.createElement("div");
+    buttonsContainer.appendChild(addButtonPrev);
+    buttonsContainer.appendChild(addButtonNext);
+    container.appendChild(buttonsContainer)
+    document.body.appendChild(container);
 
-        saveData(`name - ${index}`, name)
+    
+document.querySelector(".next").addEventListener("click", function(){
+    console.log("click next")
+})
+    console.log(data.info.next)
+}
 
-        // localStorage.removeItem("namesLocal");
-        // localStorage.setItem("namesLocal", JSON.stringify(array));
-    });
+let link = "https://rickandmortyapi.com/api/character/?page=1"
+loadData(
+    link,
+    (data) => {
 
-};
-
-const cover = document.createElement("div");
-cover.className = "cover";
-createFormV2(names, cover);
-document.body.appendChild(cover);
-
-// localStorage.setItem(names, JSON.stringify(names));
-console.log(names)
-
-// function addToLocalStrage(array){
-//     array.forEach(element)
-//     const indexElement = array.indexOf(element)
-
-// }
-// addToLocalStrage(names)
+        renderPosts(data);
+        // console.log("loadData.onLoad", data);
+    },
+    // (error) => {
+    //     console.error("onerror", error);
+    // }
+);
